@@ -337,4 +337,73 @@ header {
   font-size: 14px;
   color: #dc2626;
   font-weight: 500;
+  white-space: pre-wrap;
+}
+
+/* ── 이메일 페이지 ── */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 24px;
+}
+
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 14px;
+}
+
+.preview-table th {
+  background: #f3f4f6;
+  padding: 10px 14px;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.preview-table td {
+  padding: 10px 14px;
+  text-align: center;
+  border-bottom: 1px solid #f0f0f0;
+  color: #444;
+}
+
+.preview-table tr:last-child td { border-bottom: none; }
+
+.preview-table td.email-missing {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.msg-textarea {
+  width: 100%;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #333;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.msg-textarea:focus { border-color: #2563eb; }
+
+.btn-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.btn-row .btn-secondary {
+  flex: 0 0 auto;
+  margin-top: 0;
+}
+
+.btn-row .btn-primary {
+  flex: 1;
 }

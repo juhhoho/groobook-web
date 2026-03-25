@@ -8,10 +8,12 @@ from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
+from typing import List
 
 from processors.naeshin import process_naeshin
 from processors.quarterly import process_quarterly
 from processors.midterm import process_midterm
+from processors.email_sender import scan_files, send_billing_emails
 from renderer.pdf_renderer import render_pdf
 
 app = FastAPI()
@@ -20,6 +22,9 @@ templates = Jinja2Templates(directory="templates")
 
 # 인메모리 작업 저장소
 tasks: dict[str, dict] = {}
+
+# 이메일 스캔 임시 저장소
+email_scans: dict[str, dict] = {}
 
 
 # ──────────────── 페이지 라우트 ────────────────
@@ -61,7 +66,12 @@ async def midterm_page(request: Request):
     })
 
 
-# ──────────────── API 라우트 ────────────────
+@app.get("/email", response_class=HTMLResponse)
+async def email_page(request: Request):
+    return templates.TemplateResponse(request=request, name="email.html")
+
+
+# ──────────────── 포장전표 API ────────────────
 
 @app.post("/api/process/{proc_type}")
 async def process(
@@ -122,6 +132,7 @@ async def get_progress(task_id: str):
         "progress": task["progress"],
         "message": task["message"],
         "error": task.get("error"),
+        "email_result": task.get("email_result"),
     })
 
 
@@ -132,10 +143,75 @@ async def download(task_id: str):
         raise HTTPException(status_code=404, detail="완성된 파일이 없습니다.")
     pdf_bytes = task["result_bytes"]
     filename = task["filename"]
-    # 다운로드 후 메모리에서 제거
     tasks.pop(task_id, None)
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename*=UTF-8''{quote(filename)}"},
     )
+
+
+# ──────────────── 이메일 API ────────────────
+
+@app.post("/api/email/scan")
+async def email_scan(files: List[UploadFile] = File(...)):
+    """파일 업로드 → 파일명 파싱 → 스캔 결과 반환"""
+    file_list = []
+    for f in files:
+        content = await f.read()
+        file_list.append({"filename": f.filename, "bytes": content})
+
+    result = scan_files(file_list)
+
+    if not result["groups"]:
+        raise HTTPException(status_code=400, detail="패턴에 맞는 청구서 파일이 없습니다.\n파일명 형식: YYYY년 MM월 캠퍼스명 청구서_내신교재.xlsx")
+
+    scan_id = str(uuid.uuid4())
+    email_scans[scan_id] = result
+
+    return JSONResponse({
+        "scan_id": scan_id,
+        "preview": result["preview"],
+        "total_groups": len(result["groups"]),
+    })
+
+
+@app.post("/api/email/send")
+async def email_send(
+    scan_id: str = Form(...),
+    additional_msg: str = Form(""),
+):
+    """스캔된 파일 그룹으로 이메일 발송 시작"""
+    scan = email_scans.get(scan_id)
+    if not scan:
+        raise HTTPException(status_code=404, detail="스캔 결과를 찾을 수 없습니다. 다시 스캔해주세요.")
+
+    task_id = str(uuid.uuid4())
+    tasks[task_id] = {
+        "status": "processing",
+        "progress": 0,
+        "message": "준비 중...",
+        "result_bytes": None,
+        "filename": "",
+        "error": None,
+        "email_result": None,
+    }
+
+    groups = scan["groups"]
+
+    def run():
+        def progress_cb(pct, msg):
+            tasks[task_id]["progress"] = pct
+            tasks[task_id]["message"] = msg
+
+        try:
+            result = send_billing_emails(groups, additional_msg, progress_cb)
+            tasks[task_id]["status"] = "done"
+            tasks[task_id]["email_result"] = result
+            email_scans.pop(scan_id, None)
+        except Exception as e:
+            tasks[task_id]["status"] = "error"
+            tasks[task_id]["error"] = str(e)
+
+    threading.Thread(target=run, daemon=True).start()
+    return JSONResponse({"task_id": task_id})
