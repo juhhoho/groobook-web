@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+
+  body {
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+    background: white;
+  }
+
+  /* 전표 1장 = A4 한 페이지 */
+  .slip {
+    width: 281mm;   /* A4 landscape(297) - margin(16) */
+    height: 194mm;  /* A4(210) - margin(16) */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    border: 3px solid black;
+    page-break-after: always;
+    /* 행이 절대 늘어나지 않도록 높이 고정 */
+    max-height: 194mm;
+  }
+
+  .slip:last-child {
+    page-break-after: auto;
+  }
+
+  .cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 4mm;
+    line-height: 1.2;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  /* 내부 구분선 */
+  .cell-left  { border-right: 2.5px solid black; }
+  .cell-mid   { border-top: 2.5px solid black; border-bottom: 2.5px solid black; }
+  .cell-mid-r { border-top: 2.5px solid black; border-bottom: 2.5px solid black; }
+
+  /* 좌상: 캠퍼스이름 */
+  .campus-name     { font-size: 48pt; }
+
+  /* 좌중: 출판사 인덱스 */
+  .campus-index    { font-size: 42pt; color: #333; }
+
+  /* 좌하: 부수 */
+  .qty             { font-size: 48pt; }
+
+  /* 우상: 학년+타입 */
+  .grade-type      { font-size: 40pt; }
+
+  /* 우중: 출판사/교재명 — 길 수 있어 조금 작게, 넘치면 .. */
+  .publisher       { font-size: 32pt; }
+
+  /* 분기별교재: 우중 교재명 줄바꿈 허용 + 크기 70% */
+  .quarterly .publisher {
+    font-size: 22pt;
+    white-space: normal;
+    word-break: keep-all;
+    overflow: hidden;
+    text-overflow: unset;
+  }
+
+  /* 우하: N-M 카운터 */
+  .packing-counter { font-size: 42pt; letter-spacing: 1px; }
+</style>
+</head>
+<body class="{{ proc_type }}">
+
+{% for slip in slips %}
+<div class="slip">
+  <!-- 좌상: 캠퍼스이름 -->
+  <div class="cell cell-left campus-name">{{ slip[0] }}</div>
+  <!-- 우상: 학년 + 타입 -->
+  <div class="cell grade-type">{{ slip[1] }}</div>
+
+  <!-- 좌중: 출판사 인덱스 -->
+  <div class="cell cell-left cell-mid campus-index">{{ slip[2] }}번</div>
+  <!-- 우중: 출판사이름 -->
+  <div class="cell cell-mid-r publisher">{{ slip[3] }}</div>
+
+  <!-- 좌하: 부수 -->
+  <div class="cell cell-left qty">{{ slip[4] }}</div>
+  <!-- 우하: 총덩이-현덩이 -->
+  <div class="cell packing-counter">{{ slip[5] }}-{{ slip[7] }}</div>
+</div>
+{% endfor %}
+
+</body>
+</html>

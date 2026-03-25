@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @page {
+    size: A4 portrait;
+    margin: 4mm;
+  }
+
+  body {
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+    background: white;
+  }
+
+  /* A4 한 행 = 전표 5장 */
+  .page-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.5mm;
+    page-break-after: always;
+    width: 100%;
+    height: 205mm; /* A4 높이(297mm) - margin(8mm) - gap 여유 */
+  }
+
+  .page-row:last-child {
+    page-break-after: auto;
+  }
+
+  /* 전표 1장 */
+  .slip {
+    display: grid;
+    grid-template-rows: 20% 28% 12% 40%;
+    border: 2.5px solid black;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* 상단: 캠퍼스 + 분기/시험정보 */
+  .row-top {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 2px solid black;
+  }
+
+  /* 중단1: 번호 + 교재명 (테두리 없음) */
+  .row-mid1 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid #ccc;
+  }
+
+  /* 중단2: 빈 여백 행 */
+  .row-mid2 {
+    border-bottom: 2px solid black;
+  }
+
+  /* 하단: 수량 + 총덩이 / - / 현재번호 */
+  .row-bottom {
+    display: grid;
+    grid-template-columns: 5fr 2fr 1fr 2fr;
+  }
+
+  .cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: bold;
+    word-break: break-all;
+    padding: 1mm;
+    line-height: 1.1;
+  }
+
+  /* 상단 셀 */
+  .cell-campus {
+    font-size: 10pt;
+    border-right: 1.5px solid black;
+  }
+
+  .cell-info {
+    font-size: 8pt;
+  }
+
+  /* 중단 셀 (테두리 없음) */
+  .cell-num {
+    font-size: 8pt;
+    color: #333;
+  }
+
+  .cell-book {
+    font-size: 8pt;
+    color: #333;
+  }
+
+  /* 하단 셀 */
+  .cell-qty {
+    font-size: 18pt;
+    border-right: 2px solid black;
+  }
+
+  .cell-total {
+    font-size: 13pt;
+    border-right: none;
+  }
+
+  .cell-sep {
+    font-size: 13pt;
+    border-left: none;
+    border-right: none;
+  }
+
+  .cell-cur {
+    font-size: 13pt;
+    border-left: none;
+  }
+</style>
+</head>
+<body>
+
+{% for row in rows %}
+<div class="page-row">
+  {% for slip in row %}
+  <div class="slip">
+    <!-- 상단: 캠퍼스 / 분기(시험)정보 -->
+    <div class="row-top">
+      <div class="cell cell-campus">{{ slip[0] }}</div>
+      <div class="cell cell-info">{{ slip[1] }}</div>
+    </div>
+    <!-- 중단1: 번호 / 교재명 -->
+    <div class="row-mid1">
+      <div class="cell cell-num">{{ slip[2] }}</div>
+      <div class="cell cell-book">{{ slip[3] }}</div>
+    </div>
+    <!-- 중단2: 여백 -->
+    <div class="row-mid2"></div>
+    <!-- 하단: 수량 / 총덩이 / - / 현재번호 -->
+    <div class="row-bottom">
+      <div class="cell cell-qty">{{ slip[4] }}</div>
+      <div class="cell cell-total">{{ slip[5] }}</div>
+      <div class="cell cell-sep">{{ slip[6] }}</div>
+      <div class="cell cell-cur">{{ slip[7] }}</div>
+    </div>
+  </div>
+  {% endfor %}
+  {% if row|length < 5 %}
+    {% for _ in range(5 - row|length) %}
+    <div class="slip" style="border: none;"></div>
+    {% endfor %}
+  {% endif %}
+</div>
+{% endfor %}
+
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+
+  body {
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+    background: white;
+  }
+
+  .slip {
+    width: 281mm;
+    height: 194mm;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    border: 3px solid black;
+    page-break-after: always;
+    max-height: 194mm;
+  }
+
+  .slip:last-child {
+    page-break-after: auto;
+  }
+
+  .cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 6mm;
+    line-height: 1.2;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  /* 내부 구분선 */
+  .cell-left     { border-right: 2.5px solid black; }
+  .cell-bottom   { border-top: 2.5px solid black; }
+  .cell-bottom-r { border-top: 2.5px solid black; }
+
+  /* 좌상: 캠퍼스이름 */
+  .campus-name     { font-size: 72pt; }
+
+  /* 우상: 제품명 — 넘치면 .. */
+  .product-name    { font-size: 40pt; }
+
+  /* 좌하: 부수 */
+  .qty             { font-size: 72pt; }
+
+  /* 우하: N-M 카운터 */
+  .packing-counter { font-size: 60pt; letter-spacing: 1px; }
+</style>
+</head>
+<body>
+
+{% for slip in slips %}
+<div class="slip">
+  <!-- 좌상: 캠퍼스이름 -->
+  <div class="cell cell-left campus-name">{{ slip[0] }}</div>
+  <!-- 우상: 제품명 -->
+  <div class="cell product-name">{{ slip[1] }}</div>
+
+  <!-- 좌하: 부수 -->
+  <div class="cell cell-left cell-bottom qty">{{ slip[4] }}</div>
+  <!-- 우하: 총덩이-현덩이 -->
+  <div class="cell cell-bottom-r packing-counter">{{ slip[5] }}-{{ slip[7] }}</div>
+</div>
+{% endfor %}
+
+</body>
+</html>

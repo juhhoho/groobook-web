@@ -1,0 +1,340 @@
+/* ── 기본 ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  background: #f4f6fb;
+  color: #222;
+  min-height: 100vh;
+}
+
+a { text-decoration: none; color: inherit; }
+
+/* ── 레이아웃 ── */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.container-narrow {
+  max-width: 560px;
+}
+
+/* ── 헤더 ── */
+header {
+  margin-bottom: 40px;
+  text-align: center;
+  position: relative;
+}
+
+.back-btn {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  font-size: 14px;
+  color: #555;
+  font-weight: 500;
+}
+.back-btn:hover { color: #2563eb; }
+
+.logo {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a1a2e;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #666;
+}
+
+/* ── 카드 그리드 ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  border: 2px solid transparent;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 24px rgba(37,99,235,0.13);
+  border-color: #2563eb;
+}
+
+.card-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.card-icon { font-size: 40px; }
+
+.card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.card-desc {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* ── 업로드 영역 ── */
+.upload-area {
+  border: 2.5px dashed #c0cbe0;
+  border-radius: 16px;
+  padding: 40px 24px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: #fff;
+  margin-bottom: 24px;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-area:hover, .upload-area.drag-over {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+
+.upload-content, .upload-selected {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.upload-icon { font-size: 36px; }
+
+.upload-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.upload-hint {
+  font-size: 12px;
+  color: #888;
+}
+
+.upload-filename {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2563eb;
+  word-break: break-all;
+}
+
+/* ── 밴딩 설정 ── */
+.banding-section {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.banding-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.banding-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.banding-item label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+}
+
+.banding-item input {
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+
+.banding-item input:focus { border-color: #2563eb; }
+
+/* ── 버튼 ── */
+.btn-primary {
+  width: 100%;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  font-family: inherit;
+}
+
+.btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #333;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+  margin-top: 12px;
+}
+
+.btn-secondary:hover { background: #e5e7eb; }
+
+/* ── 진행률 ── */
+.progress-section {
+  margin-top: 28px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.progress-bar-wrap {
+  background: #e5e7eb;
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #60a5fa);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 처리 중일 때 shimmer 효과 */
+.progress-bar.processing::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+  animation: shimmer 1.2s infinite;
+}
+
+@keyframes shimmer {
+  0%   { left: -60%; }
+  100% { left: 160%; }
+}
+
+/* 메시지 앞 스피너 */
+.progress-msg.spinning::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #c0cbe0;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.progress-msg {
+  font-size: 14px;
+  color: #555;
+  text-align: center;
+}
+
+/* ── 다운로드 / 에러 ── */
+.download-section, .error-section {
+  margin-top: 28px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 36px 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.success-icon, .error-icon { font-size: 40px; }
+
+.success-msg {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.btn-download {
+  display: inline-block;
+  background: #16a34a;
+  color: #fff;
+  border-radius: 12px;
+  padding: 14px 32px;
+  font-size: 16px;
+  font-weight: 700;
+  margin-top: 4px;
+  transition: background 0.15s;
+}
+.btn-download:hover { background: #15803d; }
+
+.error-msg {
+  font-size: 14px;
+  color: #dc2626;
+  font-weight: 500;
+}

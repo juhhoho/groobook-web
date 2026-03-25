@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+env/
+
+# 환경 변수 (EC2 배포 시 사용)
+.env
+.env.*
+
+# 업로드된 Excel 파일 (런타임 생성)
+*.xlsx
+*.xls
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
