@@ -151,9 +151,10 @@ def send_billing_emails(
                 part = MIMEBase("application", "octet-stream")
                 part.set_payload(file_info["bytes"])
                 encoders.encode_base64(part)
+                sanitized_filename = re.sub(r'[^\w가-힣._-]', '_', file_info['filename'])
                 part.add_header(
                     "Content-Disposition",
-                    f"attachment; filename*=UTF-8''{re.sub(r'[^\\w가-힣._-]', '_', file_info['filename'])}",
+                    f"attachment; filename*=UTF-8''{sanitized_filename}",
                 )
                 msg.attach(part)
 
