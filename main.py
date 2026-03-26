@@ -5,12 +5,11 @@ import os
 
 from urllib.parse import quote
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse, Response, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.requests import Request
 from typing import List
-from itsdangerous import URLSafeTimedSerializer, BadSignature
 from dotenv import load_dotenv
 
 from processors.naeshin import process_naeshin
@@ -31,81 +30,9 @@ tasks: dict[str, dict] = {}
 # 이메일 스캔 임시 저장소
 email_scans: dict[str, dict] = {}
 
-# ──────────────── 세션 및 인증 설정 ────────────────
+# ──────────────── 인증 설정 ────────────────
 
-SESSION_SECRET = os.getenv("SESSION_SECRET", "dev-fallback-secret-key")
-APP_PASSWORD = os.getenv("APP_PASSWORD", "")
-serializer = URLSafeTimedSerializer(SESSION_SECRET)
-SESSION_COOKIE = "groobook_session"
-SESSION_MAX_AGE = 60 * 60 * 24 * 7  # 7일
-
-
-def verify_session(token: str) -> bool:
-    """세션 토큰 검증"""
-    if not token:
-        return False
-    try:
-        serializer.loads(token, max_age=SESSION_MAX_AGE)
-        return True
-    except BadSignature:
-        return False
-
-
-@app.middleware("http")
-async def auth_middleware(request: Request, call_next):
-    """모든 요청에 대해 인증 여부 확인"""
-    # 로그인 페이지, 정적 파일, 로그아웃은 예외
-    if (request.url.path.startswith("/login") or
-        request.url.path.startswith("/static") or
-        (request.url.path == "/logout" and request.method == "POST")):
-        return await call_next(request)
-
-    token = request.cookies.get(SESSION_COOKIE)
-    if not verify_session(token):
-        # API 요청이면 JSON 401 반환, 페이지 요청이면 /login으로 리다이렉트
-        if request.url.path.startswith("/api"):
-            return JSONResponse({"detail": "로그인이 필요합니다."}, status_code=401)
-        return RedirectResponse("/login", status_code=302)
-
-    return await call_next(request)
-
-
-# ──────────────── 로그인 라우트 ────────────────
-
-@app.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request):
-    return templates.TemplateResponse(request=request, name="login.html")
-
-
-@app.post("/login")
-async def login(request: Request, password: str = Form(...)):
-    """비밀번호 검증 후 세션 쿠키 발급"""
-    if password != APP_PASSWORD:
-        return templates.TemplateResponse(
-            request=request,
-            name="login.html",
-            context={"error": "비밀번호가 올바르지 않습니다."},
-            status_code=400,
-        )
-
-    token = serializer.dumps("authenticated")
-    response = RedirectResponse("/", status_code=302)
-    response.set_cookie(
-        SESSION_COOKIE,
-        token,
-        max_age=SESSION_MAX_AGE,
-        httponly=True,
-        samesite="Lax",
-    )
-    return response
-
-
-@app.post("/logout")
-async def logout():
-    """세션 쿠키 삭제 후 로그인 페이지로 리다이렉트"""
-    response = RedirectResponse("/login", status_code=302)
-    response.delete_cookie(SESSION_COOKIE)
-    return response
+AUTH_CODE = os.getenv("AUTH_CODE", "")
 
 
 # ──────────────── 페이지 라우트 ────────────────
@@ -150,6 +77,16 @@ async def midterm_page(request: Request):
 @app.get("/email", response_class=HTMLResponse)
 async def email_page(request: Request):
     return templates.TemplateResponse(request=request, name="email.html")
+
+
+# ──────────────── 인증 API ────────────────
+
+@app.post("/api/auth/verify")
+async def verify_auth(code: str = Form(...)):
+    """메일 발송 기능 인증코드 검증"""
+    if code == AUTH_CODE:
+        return JSONResponse({"ok": True})
+    return JSONResponse({"ok": False}, status_code=401)
 
 
 # ──────────────── 포장전표 API ────────────────

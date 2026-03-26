@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(uvicorn:*)",
+      "Bash(source venv/Scripts/activate)",
+      "Bash(curl -s http://127.0.0.1:8000/)",
+      "Bash(curl -s http://127.0.0.1:8000/email)",
+      "Bash(ls -la /c/Users/87206/Desktop/workspace/groobook-web/.env*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "Bash(pip list:*)",
+      "Bash(./venv/Scripts/pip install:*)",
+      "Bash(curl -X POST http://127.0.0.1:8000/logout -v)",
+      "Bash(curl -X POST http://127.0.0.1:8000/logout -c /tmp/cookies.txt -b \"groobook_session=test\" -v)",
+      "Bash(netstat -ano)"
+    ]
+  }
+}

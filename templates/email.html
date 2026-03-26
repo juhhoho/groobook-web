@@ -14,8 +14,30 @@
     </header>
     <main>
 
+      <!-- Step 0: 인증 -->
+      <div id="stepAuth">
+        <div class="auth-box" style="max-width: 400px; margin: 60px auto; padding: 40px; background: #f9f9f9; border-radius: 12px; text-align: center;">
+          <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #333;">인증 필요</h2>
+          <p style="margin: 0 0 24px 0; color: #666; font-size: 14px;">메일 발송 기능은 인증코드가 필요합니다.</p>
+          <input
+            type="password"
+            id="authCode"
+            placeholder="인증코드 입력"
+            style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box; margin-bottom: 16px;"
+            onkeypress="if(event.key==='Enter') submitAuth()"
+          />
+          <button
+            onclick="submitAuth()"
+            style="width: 100%; padding: 12px; background: #4a90e2; color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s;"
+            onmouseover="this.style.background='#357abd'"
+            onmouseout="this.style.background='#4a90e2'"
+          >확인</button>
+          <p id="authError" style="display:none; margin-top: 16px; color: #d32f2f; font-size: 14px;">인증코드가 올바르지 않습니다.</p>
+        </div>
+      </div>
+
       <!-- Step 1: 파일 업로드 + 스캔 -->
-      <div id="stepScan">
+      <div id="stepScan" style="display:none;">
         <div class="upload-area" id="uploadArea">
           <input type="file" id="fileInput" accept=".xlsx" multiple hidden>
           <div class="upload-content" id="uploadContent">
@@ -126,11 +148,40 @@
   </div>
 
   <script>
+    let authenticated = false;
     let selectedFiles = [];
     let scanId = null;
     let pollTimer = null;
     let previewRows = [];
     let pendingAdditionalMsg = '';
+
+    // 인증코드 제출
+    async function submitAuth() {
+      const code = document.getElementById('authCode').value.trim();
+      if (!code) return;
+
+      try {
+        const res = await fetch('/api/auth/verify', {
+          method: 'POST',
+          body: new URLSearchParams({ code }),
+        });
+
+        if (res.ok) {
+          authenticated = true;
+          document.getElementById('stepAuth').style.display = 'none';
+          document.getElementById('stepScan').style.display = '';
+          document.getElementById('authCode').value = '';
+        } else {
+          document.getElementById('authError').style.display = '';
+          document.getElementById('authCode').value = '';
+          setTimeout(() => {
+            document.getElementById('authError').style.display = 'none';
+          }, 3000);
+        }
+      } catch (err) {
+        console.error('Auth error:', err);
+      }
+    }
 
     // 업로드 영역 클릭
     document.getElementById('uploadArea').addEventListener('click', () => {
