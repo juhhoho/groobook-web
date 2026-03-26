@@ -1,0 +1,16 @@
+[Unit]
+Description=Groobook Web App
+After=network.target
+
+[Service]
+Type=notify
+User=ubuntu
+WorkingDirectory=/home/ubuntu/groobook-web
+Environment="PATH=/home/ubuntu/groobook-web/venv/bin"
+EnvironmentFile=/home/ubuntu/groobook-web/.env
+ExecStart=/home/ubuntu/groobook-web/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
