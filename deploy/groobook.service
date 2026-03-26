@@ -7,7 +7,7 @@ Type=notify
 User=ec2-user
 WorkingDirectory=/home/ec2-user/groobook-web
 Environment="PATH=/home/ec2-user/groobook-web/venv/bin"
-EnvironmentFile=/home/ec2-user/groobook-web/.env
+EnvironmentFile=-/home/ec2-user/groobook-web/.env
 ExecStart=/home/ec2-user/groobook-web/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
 Restart=always
 RestartSec=10
