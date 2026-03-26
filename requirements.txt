@@ -5,3 +5,4 @@ openpyxl
 weasyprint
 jinja2
 python-dotenv
+itsdangerous
