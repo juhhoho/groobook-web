@@ -206,6 +206,37 @@ http://<DUCKDNS_DOMAIN>.duckdns.org
 
 ## 🔧 배포 후 유지보수
 
+### 코드 변경 후 서버에 적용하기
+
+**로컬에서 코드 수정 후:**
+```bash
+git add .
+git commit -m "fix: 뭔가 수정함"
+git push origin main
+```
+
+**EC2에서:**
+```bash
+cd /home/ec2-user/groobook-web
+git pull
+sudo systemctl restart groobook
+```
+
+이제 변경사항이 서버에 반영됩니다.
+
+#### ⚠️ git pull로 갱신되지 않는 파일들
+
+다음 파일들은 git에 없으므로 `git pull` 후에도 변경되지 않습니다:
+
+- **`.env`**: 로컬 환경변수 파일
+  - EC2에서 직접 수정: `nano /home/ec2-user/groobook-web/.env`
+  - 수정 후 서비스 재시작: `sudo systemctl restart groobook`
+
+- **`campus_emails.json`**: 캠퍼스 이메일 매핑 파일
+  - 로컬에서 업로드: `scp -i key.pem campus_emails.json ec2-user@<IP>:/home/ec2-user/groobook-web/`
+
+---
+
 ### 서비스 상태 확인
 
 ```bash
