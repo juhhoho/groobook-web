@@ -54,8 +54,10 @@ def verify_session(token: str) -> bool:
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
     """모든 요청에 대해 인증 여부 확인"""
-    # 로그인 페이지와 정적 파일은 예외
-    if request.url.path.startswith("/login") or request.url.path.startswith("/static"):
+    # 로그인 페이지, 정적 파일, 로그아웃은 예외
+    if (request.url.path.startswith("/login") or
+        request.url.path.startswith("/static") or
+        (request.url.path == "/logout" and request.method == "POST")):
         return await call_next(request)
 
     token = request.cookies.get(SESSION_COOKIE)
