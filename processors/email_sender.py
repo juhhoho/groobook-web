@@ -15,7 +15,7 @@ load_dotenv()
 
 CAMPUS_EMAILS_PATH = Path(__file__).parent.parent / "campus_emails.json"
 FILENAME_PATTERN = re.compile(
-    r'(\d{4})년\s+(\d{1,2})월\s+(.+?)\s+청구서_(내신교재|소모품)'
+    r'(\d{4})년\s+(\d{1,2})월\s+(.+?)\s+청구서_(내신교재|소모품)(?:\.xlsx)?'
 )
 
 
