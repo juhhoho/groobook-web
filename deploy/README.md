@@ -1,12 +1,12 @@
-# AWS EC2 + DuckDNS 배포 가이드
+# AWS EC2 + DuckDNS 배포 가이드 (Amazon Linux 2023)
 
 ## 📋 사전 준비사항
 
 ### 사용자가 해야 할 일 (외부 서비스)
 
 1. **AWS 콘솔에서 EC2 생성**
-   - AMI: Ubuntu Server 22.04 LTS (Free Tier)
-   - Instance Type: t2.micro
+   - AMI: Amazon Linux 2023 (kernel-6.1)
+   - Instance Type: t2.micro (Free Tier)
    - Key pair: 새로 생성 후 `.pem` 파일 저장
    - Security Group 인바운드 규칙:
      - SSH (22): 내 IP
@@ -32,13 +32,13 @@
 
 ```bash
 # 로컬 터미널에서
-ssh -i your-key.pem ubuntu@<EC2-퍼블릭-IP>
+ssh -i your-key.pem ec2-user@<EC2-퍼블릭-IP>
 ```
 
 ### Step 2: 프로젝트 클론
 
 ```bash
-cd /home/ubuntu
+cd /home/ec2-user
 git clone <your-repo-url> groobook-web
 cd groobook-web
 ```
@@ -80,7 +80,7 @@ GMAIL_APP_PASSWORD=your-16-char-app-password
 
 로컬에서:
 ```bash
-scp -i your-key.pem campus_emails.json ubuntu@<EC2-IP>:/home/ubuntu/groobook-web/
+scp -i your-key.pem campus_emails.json ec2-user@<EC2-IP>:/home/ec2-user/groobook-web/
 ```
 
 ### Step 6: 서비스 상태 확인
