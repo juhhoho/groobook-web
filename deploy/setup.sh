@@ -30,7 +30,7 @@ sudo dnf install -y pango gdk-pixbuf2 libffi-devel cairo
 
 # 3. Nginx 설치
 echo "[3/7] Nginx 설치 중..."
-sudo dnf install -y nginx
+sudo dnf install -y nginx cronie
 
 # 4. 프로젝트 환경 설정
 echo "[4/7] Python 가상환경 및 패키지 설치 중..."
@@ -61,6 +61,10 @@ sudo systemctl start nginx
 
 # 7. DuckDNS 자동 업데이트 설정
 echo "[7/7] DuckDNS 자동 업데이트 설정 중..."
+# crond 서비스 시작 (Amazon Linux 2023에서 필수)
+sudo systemctl enable crond
+sudo systemctl start crond
+
 mkdir -p ~/duckdns
 cat > ~/duckdns/duck.sh << EOF
 #!/bin/bash
