@@ -14,6 +14,7 @@ env/
 # 환경 변수 (EC2 배포 시 사용)
 .env
 .env.*
+campus_emails.json
 
 # 업로드된 Excel 파일 (런타임 생성)
 *.xlsx
