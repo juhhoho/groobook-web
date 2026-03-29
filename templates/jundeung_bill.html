@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>중등 청구서 - 그루북</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="container container-narrow">
+    <header>
+      <a href="/" class="back-btn">← 홈</a>
+      <h1 class="logo">중등 청구서</h1>
+    </header>
+    <main>
+      <form id="uploadForm">
+        <!-- 파일 업로드 -->
+        <div class="upload-area" id="uploadArea">
+          <input type="file" id="fileInput" accept=".xlsx" hidden>
+          <div class="upload-content" id="uploadContent">
+            <div class="upload-icon">📂</div>
+            <p class="upload-text">엑셀 파일을 드래그하거나 클릭하여 선택</p>
+            <p class="upload-hint">.xlsx 파일만 지원</p>
+          </div>
+          <div class="upload-selected" id="uploadSelected" style="display:none;">
+            <div class="upload-icon">✅</div>
+            <p class="upload-filename" id="uploadFilename"></p>
+            <p class="upload-hint">다른 파일로 변경하려면 클릭</p>
+          </div>
+        </div>
+
+        <!-- 처리 시작 버튼 -->
+        <button type="submit" class="btn-primary" id="submitBtn" disabled>
+          처리 시작
+        </button>
+      </form>
+
+      <!-- 진행률 -->
+      <div class="progress-section" id="progressSection" style="display:none;">
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" id="progressBar" style="width:0%"></div>
+        </div>
+        <p class="progress-msg" id="progressMsg">준비 중...</p>
+      </div>
+
+      <!-- 다운로드 -->
+      <div class="download-section" id="downloadSection" style="display:none;">
+        <div class="success-icon">🎉</div>
+        <p class="success-msg">청구서 엑셀이 완성되었습니다!</p>
+        <a class="btn-download" id="downloadBtn" href="#">Excel 다운로드</a>
+      </div>
+
+      <!-- 에러 -->
+      <div class="error-section" id="errorSection" style="display:none;">
+        <div class="error-icon">⚠️</div>
+        <p class="error-msg" id="errorMsg"></p>
+        <button class="btn-secondary" onclick="resetForm()">다시 시도</button>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const procType = "jundeung_bill";
+    let selectedFile = null;
+    let pollTimer = null;
+
+    document.getElementById('uploadArea').addEventListener('click', () => {
+      document.getElementById('fileInput').click();
+    });
+
+    const uploadArea = document.getElementById('uploadArea');
+    uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag-over'); });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
+    uploadArea.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadArea.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file) setFile(file);
+    });
+
+    document.getElementById('fileInput').addEventListener('change', e => {
+      if (e.target.files[0]) setFile(e.target.files[0]);
+    });
+
+    function setFile(file) {
+      selectedFile = file;
+      document.getElementById('uploadContent').style.display = 'none';
+      document.getElementById('uploadSelected').style.display = 'flex';
+      document.getElementById('uploadFilename').textContent = file.name;
+      document.getElementById('submitBtn').disabled = false;
+    }
+
+    document.getElementById('uploadForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      if (!selectedFile) return;
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      document.getElementById('submitBtn').disabled = true;
+      document.getElementById('progressSection').style.display = 'block';
+
+      try {
+        const res = await fetch(`/api/process/${procType}`, { method: 'POST', body: formData });
+        const { task_id } = await res.json();
+        pollProgress(task_id);
+      } catch (err) {
+        showError('서버 연결에 실패했습니다.');
+      }
+    });
+
+    function pollProgress(taskId) {
+      const bar = document.getElementById('progressBar');
+      const msg = document.getElementById('progressMsg');
+      bar.classList.add('processing');
+      msg.classList.add('spinning');
+
+      pollTimer = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/progress/${taskId}`);
+          const data = await res.json();
+
+          bar.style.width = data.progress + '%';
+          msg.textContent = data.message;
+
+          if (data.status === 'done') {
+            clearInterval(pollTimer);
+            bar.classList.remove('processing');
+            msg.classList.remove('spinning');
+            showDownload(taskId);
+          } else if (data.status === 'error') {
+            clearInterval(pollTimer);
+            bar.classList.remove('processing');
+            msg.classList.remove('spinning');
+            showError(data.error || '처리 중 오류가 발생했습니다.');
+          }
+        } catch {
+          clearInterval(pollTimer);
+          bar.classList.remove('processing');
+          msg.classList.remove('spinning');
+          showError('서버 연결이 끊어졌습니다.');
+        }
+      }, 800);
+    }
+
+    function showDownload(taskId) {
+      document.getElementById('progressSection').style.display = 'none';
+      document.getElementById('downloadSection').style.display = 'flex';
+      document.getElementById('downloadBtn').href = `/api/download/${taskId}`;
+    }
+
+    function showError(msg) {
+      document.getElementById('progressSection').style.display = 'none';
+      document.getElementById('errorSection').style.display = 'flex';
+      document.getElementById('errorMsg').textContent = msg;
+    }
+
+    function resetForm() {
+      selectedFile = null;
+      document.getElementById('uploadContent').style.display = 'flex';
+      document.getElementById('uploadSelected').style.display = 'none';
+      document.getElementById('submitBtn').disabled = true;
+      document.getElementById('progressSection').style.display = 'none';
+      document.getElementById('downloadSection').style.display = 'none';
+      document.getElementById('errorSection').style.display = 'none';
+      document.getElementById('progressBar').style.width = '0%';
+      document.getElementById('fileInput').value = '';
+    }
+  </script>
+</body>
+</html>

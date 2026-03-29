@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 from processors.naeshin import process_naeshin
 from processors.quarterly import process_quarterly
 from processors.midterm import process_midterm
+from processors.jundeung_bill import process_jundeung_bill
 from processors.email_sender import scan_files, send_billing_emails
 from renderer.pdf_renderer import render_pdf
 
@@ -74,6 +75,11 @@ async def midterm_page(request: Request):
     })
 
 
+@app.get("/jundeung-bill", response_class=HTMLResponse)
+async def jundeung_bill_page(request: Request):
+    return templates.TemplateResponse(request=request, name="jundeung_bill.html")
+
+
 @app.get("/email", response_class=HTMLResponse)
 async def email_page(request: Request):
     return templates.TemplateResponse(request=request, name="email.html")
@@ -99,6 +105,35 @@ async def process(
     mini_banding: int = Form(70),
     teacher_banding: int = Form(15),
 ):
+    if proc_type == "jundeung_bill":
+        file_bytes = await file.read()
+        task_id = str(uuid.uuid4())
+        original_name = file.filename.rsplit('.', 1)[0]
+        tasks[task_id] = {
+            "status": "processing",
+            "progress": 0,
+            "message": "준비 중...",
+            "result_bytes": None,
+            "filename": f"{original_name}_{task_id[:8]}.xlsx",
+            "error": None,
+            "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        }
+
+        def run_bill():
+            def progress_cb(pct, msg):
+                tasks[task_id]["progress"] = pct
+                tasks[task_id]["message"] = msg
+            try:
+                xlsx_bytes = process_jundeung_bill(file_bytes, progress_cb)
+                tasks[task_id]["result_bytes"] = xlsx_bytes
+                tasks[task_id]["status"] = "done"
+            except Exception as e:
+                tasks[task_id]["status"] = "error"
+                tasks[task_id]["error"] = str(e)
+
+        threading.Thread(target=run_bill, daemon=True).start()
+        return JSONResponse({"task_id": task_id})
+
     if proc_type not in ("naeshin", "quarterly", "midterm"):
         raise HTTPException(status_code=400, detail="알 수 없는 작업 유형입니다.")
 
@@ -159,12 +194,13 @@ async def download(task_id: str):
     task = tasks.get(task_id)
     if not task or task["status"] != "done":
         raise HTTPException(status_code=404, detail="완성된 파일이 없습니다.")
-    pdf_bytes = task["result_bytes"]
+    file_bytes = task["result_bytes"]
     filename = task["filename"]
+    content_type = task.get("content_type", "application/pdf")
     tasks.pop(task_id, None)
     return Response(
-        content=pdf_bytes,
-        media_type="application/pdf",
+        content=file_bytes,
+        media_type=content_type,
         headers={"Content-Disposition": f"attachment; filename*=UTF-8''{quote(filename)}"},
     )
 
